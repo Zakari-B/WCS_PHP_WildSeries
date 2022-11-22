@@ -17,17 +17,19 @@ class ProgramFixtures extends Fixture implements DependentFixtureInterface
         'Japan',
         'Russia',
     ];
+    const NB_PROGRAMS = 5;
 
     public function load(ObjectManager $manager)
     {
-        for ($i = 0; $i < 5; $i++) {
-            foreach (CategoryFixtures::CATEGORIES as $key => $categoryName) {
+        foreach (CategoryFixtures::CATEGORIES as $key => $categoryName) {
+            for ($i = 1; $i <= self::NB_PROGRAMS; $i++) {
                 $program = new Program();
-                $program->setTitle('Film ' . $key . $i);
+                $program->setTitle('Série ' . $key . $i);
                 $program->setSynopsis('Un film populaire pour les amateurs du genre ' . $categoryName);
                 $program->setCategory($this->getReference('category_' . $categoryName));
                 $program->setCountry($this::COUNTRIES[$i]);
                 $program->setYear(2000 + $i);
+                $this->addReference('program_' . ($i + ($key * SELF::NB_PROGRAMS)), $program);
                 $manager->persist($program);
                 $manager->flush();
             }
