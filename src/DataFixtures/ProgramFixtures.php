@@ -25,7 +25,7 @@ class ProgramFixtures extends Fixture implements DependentFixtureInterface
             for ($i = 1; $i <= self::NB_PROGRAMS; $i++) {
                 $program = new Program();
                 $program->setTitle('Série ' . $key . $i);
-                $program->setSynopsis('Un film populaire pour les amateurs du genre ' . $categoryName);
+                $program->setSynopsis('Une série populaire pour les amateurs du genre ' . $categoryName);
                 $program->setCategory($this->getReference('category_' . $categoryName));
                 $program->setCountry($this::COUNTRIES[$i]);
                 $program->setYear(2000 + $i);
