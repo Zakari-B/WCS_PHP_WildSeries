@@ -6,8 +6,12 @@ use App\Repository\EpisodeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use App\Repository\ProgramRepository;
+use App\Entity\Program;
 use App\Repository\SeasonRepository;
+use App\Entity\Season;
+use App\Entity\Episode;
 
 #[Route('/program', name: 'program_')]
 class ProgramController extends AbstractController
@@ -23,17 +27,15 @@ class ProgramController extends AbstractController
     }
 
     #[Route('/{id}', methods: ['GET'],  requirements: ['id' => '\d+'], name: 'show')]
-    public function show(int $id = 1, ProgramRepository $programRepository, SeasonRepository $seasonRepository): Response
+    public function show(Program $program, SeasonRepository $seasonRepository): Response
     {
-        $program = $programRepository->findOneBy(['id' => $id]);
-
         if (!$program) {
             throw $this->createNotFoundException(
-                'No program with id : ' . $id . ' found in program\'s table.'
+                'No program with this id found in program\'s table.'
             );
         }
 
-        $seasons = $seasonRepository->findBy(['program' => $program->getId()], ['id' => 'DESC']);
+        $seasons = $seasonRepository->findBy(['program' => $program], ['id' => 'DESC']);
 
         return $this->render('program/show.html.twig', [
             'program' => $program,
@@ -42,19 +44,19 @@ class ProgramController extends AbstractController
     }
 
     #[Route('/{programId}/season/{seasonId}', methods: ['GET'],  requirements: ['programId' => '\d+', 'seasonId' => '\d+'], name: 'season_show')]
-    public function showSeason(int $programId = 1, int $seasonId = 1, ProgramRepository $programRepository, SeasonRepository $seasonRepository, EpisodeRepository $episodeRepository): Response
+    #[ParamConverter('program', options: ['mapping' => ['programId' => 'id']])]
+    #[ParamConverter('season', options: ['mapping' => ['seasonId' => 'id']])]
+    public function showSeason(Program $program, Season $season, EpisodeRepository $episodeRepository): Response
     {
-        $program = $programRepository->findOneBy(['id' => $programId]);
         if (!$program) {
             throw $this->createNotFoundException(
-                'No program with id : ' . $programId . ' found in program\'s table.'
+                'No program with this id found in program\'s table.'
             );
         }
 
-        $season = $seasonRepository->findOneBy(['program' => $program->getId(), 'number' => $seasonId]);
         if (!$season) {
             throw $this->createNotFoundException(
-                'No season with id : ' . $season . ' found for this program.'
+                'No season with this id found for this program.'
             );
         }
 
@@ -64,6 +66,37 @@ class ProgramController extends AbstractController
             'program' => $program,
             'season' => $season,
             'episodes' => $episodes,
+        ]);
+    }
+
+    #[Route('/{programId}/season/{seasonId}/episode/{episodeId}', methods: ['GET'],  requirements: ['programId' => '\d+', 'seasonId' => '\d+'], name: 'episode_show')]
+    #[ParamConverter('program', options: ['mapping' => ['programId' => 'id']])]
+    #[ParamConverter('season', options: ['mapping' => ['seasonId' => 'id']])]
+    #[ParamConverter('episode', options: ['mapping' => ['episodeId' => 'id']])]
+    public function showEpisode(Program $program, Season $season, Episode $episode): Response
+    {
+        if (!$program) {
+            throw $this->createNotFoundException(
+                'No program with this id found in program\'s table.'
+            );
+        }
+
+        if (!$season) {
+            throw $this->createNotFoundException(
+                'No season with this id found for this program.'
+            );
+        }
+
+        if (!$episode) {
+            throw $this->createNotFoundException(
+                'No episode with this id found for this program.'
+            );
+        }
+
+        return $this->render('program/episode_show.html.twig', [
+            'program' => $program,
+            'season' => $season,
+            'episode' => $episode,
         ]);
     }
 }

@@ -29,46 +29,26 @@
           {{ season.description }}
         </p>
       </div>
-    </div>
-    <div class="episodes container-fluid w-90 m-auto border border-2 border-success mt-5 pb-2">
-      <h2>
-        Liste des épisodes :
-      </h2>
-      {% for episode in episodes %}
-        <h3>
-          {{ episode.number }} - {{ episode.title }}
-        </h3>
-        <p>
+      <div class="season d-flex flex-column mt-5">
+        <h2 class="mb-3">
+          Episode {{ episode.number }} - ({{ episode.title }})
+        </h2>
+        <p class="mb-3">
           {{ episode.synopsis }}
         </p>
-        <a href="{{
-          path(
-            'program_episode_show',
-            {
-              programId: program.id,
-              seasonId: season.id,
-              episodeId: episode.id
-            }
-          )
-          }}">
-          Voir l'épisode.
-        </a>
-      {% else %}
-        <p>
-          Aucun épisode trouvé.
-        </p>
-      {% endfor %}
+      </div>
     </div>
     <div class="mt-5 pb-3 mx-auto w-90">
       <a href="{{
         path(
-          'program_show',
+          'program_season_show',
           {
-            id: program.id
+            programId: program.id,
+            seasonId: season.id
           }
         )
         }}">
-        Retour à la série.
+        Retour à la saison.
       </a>
     </div>
   </div>
