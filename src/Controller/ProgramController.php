@@ -28,17 +28,22 @@ class ProgramController extends AbstractController
         );
     }
 
-    #[Route('/new', name: 'new')]
+    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, ProgramRepository $programRepository): Response
     {
     $program = new Program();
     $form = $this->createForm(ProgramType::class, $program);
     $form->handleRequest($request);
+
     if ($form->isSubmitted() && $form->isValid()) {
         $programRepository->save($program, true);            
 
+        // Once the form is submitted, valid and the data inserted in database, you can define the success flash message
+        $this->addFlash('success', 'The new program has been created');
+
         return $this->redirectToRoute('program_index');
     }
+
         return $this->renderForm('program/new.html.twig', [
             'form' => $form,
         ]);
@@ -59,6 +64,39 @@ class ProgramController extends AbstractController
             'program' => $program,
             'seasons' => $seasons,
         ]);
+    }
+
+    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Program $program, ProgramRepository $programRepository): Response
+    {
+
+        $form = $this->createForm(ProgramType::class, $program);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $programRepository->save($program, true);
+
+            $this->addFlash('success', 'The program has been edited successfully');
+
+            return $this->redirectToRoute('program_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->renderForm('program/edit.html.twig', [
+            'program' => $program,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/{id}', name: 'delete', methods: ['POST'])]
+    public function delete(Request $request, Program $program, ProgramRepository $programRepository): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$program->getId(), $request->request->get('_token'))) {
+            $programRepository->remove($program, true);
+
+            $this->addFlash('danger', 'The program has been deleted successfully');
+        }
+
+        return $this->redirectToRoute('program_index', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/{programId}/season/{seasonId}', methods: ['GET'],  requirements: ['programId' => '\d+', 'seasonId' => '\d+'], name: 'season_show')]
