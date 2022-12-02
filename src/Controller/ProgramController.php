@@ -15,6 +15,8 @@ use App\Entity\Episode;
 use App\Form\ProgramType;
 use App\Service\ProgramDuration;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/program', name: 'program_')]
@@ -31,7 +33,7 @@ class ProgramController extends AbstractController
     }
 
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
-    public function new(Request $request, ProgramRepository $programRepository, SluggerInterface $slugger): Response
+    public function new(Request $request, ProgramRepository $programRepository, SluggerInterface $slugger, MailerInterface $mailer): Response
     {
     $program = new Program();
     $form = $this->createForm(ProgramType::class, $program);
@@ -40,7 +42,15 @@ class ProgramController extends AbstractController
     if ($form->isSubmitted() && $form->isValid()) {
         $slug = $slugger->slug($program->getTitle());
         $program->setSlug($slug);
-        $programRepository->save($program, true);            
+        $programRepository->save($program, true);     
+        
+        $email = (new Email())
+                ->from($this->getParameter('mailer_from'))
+                ->to('their_email@example.com')
+                ->subject('Une nouvelle série vient d\'être publiée !')
+                ->html($this->renderView('program/newProgramEmail.html.twig', ['program' => $program]));
+
+        $mailer->send($email);
 
         // Once the form is submitted, valid and the data inserted in database, you can define the success flash message
         $this->addFlash('success', 'The new program has been created');
