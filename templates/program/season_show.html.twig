@@ -45,9 +45,9 @@
           path(
             'program_episode_show',
             {
-              programId: program.id,
+              programSlug: program.slug,
               seasonId: season.id,
-              episodeId: episode.id
+              episodeSlug: episode.slug
             }
           )
           }}">
@@ -64,7 +64,7 @@
         path(
           'program_show',
           {
-            id: program.id
+            slug: program.slug
           }
         )
         }}">

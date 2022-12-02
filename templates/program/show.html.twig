@@ -20,6 +20,9 @@
         <p class="mb-3">
           Catégorie : {{ program.category.name }}
         </p>
+        <p class="mb-3">
+          Durée totale : {{ programDuration }}
+        </p>
       </div>
     </div>
     {% for season in seasons %}
@@ -35,7 +38,7 @@
             'program_season_show',
             {
               seasonId: season.id,
-              programId: program.id
+              programSlug: program.slug
             }
           )
           }}">
