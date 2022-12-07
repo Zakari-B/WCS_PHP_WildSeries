@@ -19,7 +19,7 @@ class ProgramFixtures extends Fixture implements DependentFixtureInterface
         'Russia',
     ];
     const NB_PROGRAMS = 5;
-    
+
     private SluggerInterface $slugger;
 
     public function __construct(SluggerInterface $slugger)
@@ -29,6 +29,7 @@ class ProgramFixtures extends Fixture implements DependentFixtureInterface
 
     public function load(ObjectManager $manager)
     {
+
         foreach (CategoryFixtures::CATEGORIES as $key => $categoryName) {
             for ($i = 1; $i <= self::NB_PROGRAMS; $i++) {
                 $program = new Program();
@@ -39,6 +40,7 @@ class ProgramFixtures extends Fixture implements DependentFixtureInterface
                 $program->setYear(2000 + $i);
                 $this->addReference('program_' . ($i + ($key * SELF::NB_PROGRAMS)), $program);
                 $program->setSlug($this->slugger->slug($program->getTitle()));
+                $program->setOwner($this->getReference('user_user' . rand(0, 2)));
                 $manager->persist($program);
                 $manager->flush();
             }
@@ -50,6 +52,7 @@ class ProgramFixtures extends Fixture implements DependentFixtureInterface
         // Tu retournes ici toutes les classes de fixtures dont ProgramFixtures dépend
         return [
             CategoryFixtures::class,
+            UserFixtures::class,
         ];
     }
 }
