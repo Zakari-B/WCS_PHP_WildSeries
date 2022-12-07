@@ -2,6 +2,7 @@
 // src/Controller/ProgramController.php
 namespace App\Controller;
 
+use App\Entity\Comment;
 use App\Repository\EpisodeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,12 +14,14 @@ use App\Repository\SeasonRepository;
 use App\Entity\Season;
 use App\Entity\Episode;
 use App\Form\ProgramType;
+use App\Form\CommentType;
+use App\Repository\CommentRepository;
 use App\Service\ProgramDuration;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Symfony\Component\HttpFoundation\File\File;
+
 
 #[Route('/program', name: 'program_')]
 class ProgramController extends AbstractController
@@ -143,11 +146,11 @@ class ProgramController extends AbstractController
         ]);
     }
 
-    #[Route('/{programSlug}/season/{seasonId}/episode/{episodeSlug}', methods: ['GET'],  requirements: ['seasonId' => '\d+'], name: 'episode_show')]
+    #[Route('/{programSlug}/season/{seasonId}/episode/{episodeSlug}', methods: ['GET', 'POST'],  requirements: ['seasonId' => '\d+'], name: 'episode_show')]
     #[ParamConverter('program', options: ['mapping' => ['programSlug' => 'slug']])]
     #[ParamConverter('season', options: ['mapping' => ['seasonId' => 'id']])]
     #[ParamConverter('episode', options: ['mapping' => ['episodeSlug' => 'slug']])]
-    public function showEpisode(Program $program, Season $season, Episode $episode): Response
+    public function showEpisode(Program $program, Season $season, Episode $episode, Request $request, CommentRepository $commentRepository): Response
     {
         if (!$program) {
             throw $this->createNotFoundException(
@@ -166,11 +169,36 @@ class ProgramController extends AbstractController
                 'No episode with this id found for this program.'
             );
         }
+        $comment = new Comment();
+        $form = $this->createForm(CommentType::class, $comment);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $comment->setAuthor($this->getUser());
+            $comment->setEpisode($episode);
+            $commentRepository->save($comment, true);
+
+            $this->addFlash('success', 'The comment has been posted successfully');
+
+            return $this->redirectToRoute('program_episode_show', ['programSlug' => $program->getSlug(), 'seasonId' => $season->getId(), 'episodeSlug' => $episode->getSlug()], Response::HTTP_SEE_OTHER);
+        }
+
+        $comments = $commentRepository->findBy(['episode' => $episode]);
+
+        $commentedCheck = $commentRepository->findBy(['author' => $this->getUser(), 'episode' => $episode], ['id' => 'DESC']);
+        if ($commentedCheck) {
+            $commented = true;
+        } else {
+            $commented = false;
+        }
 
         return $this->render('program/episode_show.html.twig', [
             'program' => $program,
             'season' => $season,
             'episode' => $episode,
+            'form' => $form->createView(),
+            'comments' => $comments,
+            'commented' => $commented
         ]);
     }
 }
