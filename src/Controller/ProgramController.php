@@ -18,6 +18,7 @@ use App\Form\SearchProgramType;
 use App\Form\CommentType;
 use App\Repository\CommentRepository;
 use App\Service\ProgramDuration;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -80,6 +81,29 @@ class ProgramController extends AbstractController
         return $this->renderForm('program/new.html.twig', [
             'form' => $form,
         ]);
+    }
+
+    #[Route('/{id}/watchlist', methods: ['GET', 'POST'], name: 'watchlist')]
+    public function addToWatchlist(Program $program, EntityManagerInterface $entityManager): Response
+    {
+        if (!$program) {
+            throw $this->createNotFoundException(
+                'No program with this id found in program\'s table.'
+            );
+        }
+
+        /** @var User */
+        $user = $this->getUser();
+
+        if ($user->isInWatchlist($program)) {
+            $user->removeFromWatchlist($program);
+        } else {
+            $user->addToWatchlist($program);
+        }
+
+        $entityManager->flush();
+
+        return $this->redirectToRoute('program_show', ['slug' => $program->getSlug()], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/{slug}', methods: ['GET'], name: 'show')]
