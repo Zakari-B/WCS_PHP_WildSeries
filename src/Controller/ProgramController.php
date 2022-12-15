@@ -17,8 +17,8 @@ use App\Form\ProgramType;
 use App\Form\SearchProgramType;
 use App\Form\CommentType;
 use App\Repository\CommentRepository;
+use App\Repository\UserRepository;
 use App\Service\ProgramDuration;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -84,7 +84,7 @@ class ProgramController extends AbstractController
     }
 
     #[Route('/{id}/watchlist', methods: ['GET', 'POST'], name: 'watchlist')]
-    public function addToWatchlist(Program $program, EntityManagerInterface $entityManager): Response
+    public function addToWatchlist(Program $program, UserRepository $userRepository): Response
     {
         if (!$program) {
             throw $this->createNotFoundException(
@@ -92,7 +92,7 @@ class ProgramController extends AbstractController
             );
         }
 
-        /** @var User */
+        /** @var \App\Entity\User */
         $user = $this->getUser();
 
         if ($user->isInWatchlist($program)) {
@@ -101,7 +101,7 @@ class ProgramController extends AbstractController
             $user->addToWatchlist($program);
         }
 
-        $entityManager->flush();
+        $userRepository->save($user, true);
 
         return $this->redirectToRoute('program_show', ['slug' => $program->getSlug()], Response::HTTP_SEE_OTHER);
     }

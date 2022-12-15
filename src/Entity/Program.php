@@ -78,7 +78,6 @@ class Program
     private ?User $owner = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'watchlist')]
-    #[ORM\JoinTable(name: 'watchlist')]
     private Collection $viewers;
 
     public function __construct()
