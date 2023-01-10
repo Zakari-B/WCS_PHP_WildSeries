@@ -1,0 +1,5 @@
+hello_username: "Hello %username%"
+account.myaccount: "My account"
+account.logout: "Logout"
+account.login: "Login"
+language.dropdownmenu: "Language selection"

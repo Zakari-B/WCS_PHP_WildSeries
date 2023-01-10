@@ -17,31 +17,31 @@
 				</li>
 				<li class="nav-item dropdown">
 					<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-						Dropdown link
+						{{ 'language.dropdownmenu'|trans }}
 					</a>
 					<ul class="dropdown-menu">
 						<li>
-							<a class="dropdown-item" href="#">Action</a>
+							<a class="dropdown-item" href="{{ path("app_language", { _locale: 'fr'}) }}">🇫🇷 - Français</a>
 						</li>
 						<li>
-							<a class="dropdown-item" href="#">Another action</a>
-						</li>
-						<li>
-							<a class="dropdown-item" href="#">Something else here</a>
+							<a class="dropdown-item" href="{{ path("app_language", { _locale: 'en'}) }}">🇺🇸 - English</a>
 						</li>
 					</ul>
 				</li>
 			</ul>
 			<div>
 				{% if app.user %}
-					{{ app.user.username }}
+					{% trans with {'%username%': app.user.email} %}
+					hello_username
+					{% endtrans %}
+					!
 					<a href="{{ path('app_profile') }}">
-						Mon compte</a>
+						{{ 'account.myaccount'|trans }}</a>
 					<a href="{{ path('app_logout') }}">
-						Se déconnecter</a>
+						{{ 'account.logout'|trans }}</a>
 				{% else %}
 					<a href="{{ path('app_login') }}">
-						Se connecter</a>
+						{{ 'account.login'|trans }}</a>
 				{% endif %}
 			</div>
 		</div>
